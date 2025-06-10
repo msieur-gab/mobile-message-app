@@ -1,0 +1,16 @@
+:root {
+    --background-color: #f4f4f9;
+    --container-color: #ffffff;
+    --text-color: #333333;
+    --primary-color: #005fcc;
+    --primary-text-color: #ffffff;
+    --phrase-bg: #ffffff;
+    --phrase-border: #e0e0e0;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --panel-bg: #ffffff;
+    --overlay-bg: rgba(0, 0, 0, 0.3);
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+}

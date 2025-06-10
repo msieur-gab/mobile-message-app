@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Messages</title>
+    
+    <style>
+        :root {
+            --background-color: #f4f4f9;
+            --container-color: #ffffff;
+            --text-color: #333333;
+            --primary-color: #005fcc;
+            --primary-text-color: #ffffff;
+            --phrase-bg: #ffffff;
+            --phrase-border: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 1rem;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 150px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: var(--container-color);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px var(--shadow-color);
+        }
+        
+        h1, .category h2 {
+            font-weight: 700;
+            color: var(--text-color);
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 1rem;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+        }
+        .category h2 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0.75rem;
+        }
+        
+        .select-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background-color: var(--container-color);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .name-selector, .nickname-selector {
+            display: flex;
+            align-items: center;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            padding: 4px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .nickname-selector {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 0.5rem;
+            overflow-x: auto;
+        }
+        .nickname-selector::-webkit-scrollbar { display: none; }
+        .nickname-selector { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+        .name-btn, .nickname-btn {
+            padding: 0.5rem;
+            border: none;
+            background-color: transparent;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .name-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .nickname-btn {
+            background-color: #e2e8f0;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .name-btn img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .name-btn.active, .nickname-btn.active {
+            background-color: var(--primary-color);
+            color: var(--primary-text-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        #nickname-selector-container.hidden {
+            display: none;
+        }
+
+        .settings-btn {
+            background: none; border: none; cursor: pointer; padding: 8px; margin-left: 4px;
+        }
+        .settings-btn svg { width: 24px; height: 24px; color: #555; }
+
+        .phrases-carousel {
+            display: flex; overflow-x: auto; padding: 0.5rem 0 1rem 0; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+        }
+        .phrases-carousel::-webkit-scrollbar { display: none; }
+        .phrases-carousel { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .phrase {
+            flex: 0 0 80%; max-width: 300px; background-color: var(--phrase-bg); padding: 1rem; border-radius: 12px; cursor: pointer; font-size: 1rem; border: 1px solid var(--phrase-border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); scroll-snap-align: start; margin-right: 1rem; transition: transform 0.2s ease-in-out; min-height: 4em; display: flex; align-items: center; justify-content: center; text-align: center;
+        }
+        .phrase:active { transform: scale(0.97); }
+        
+        .feedback {
+            position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background-color: var(--success-color); color: white; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; opacity: 0; transition: opacity 0.5s, transform 0.5s; pointer-events: none; font-weight: 500; text-align: center; width: auto; max-width: 90%;
+        }
+        .feedback.show { opacity: 1; transform: translate(-50%, 0); }
+        .feedback .original-text { display: block; font-size: 0.8em; opacity: 0.8; margin-top: 6px; }
+
+        .prefs-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
+        .prefs-modal.show { display: flex; }
+        .prefs-content { background: var(--background-color); padding: 1.5rem; border-radius: 16px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        .prefs-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; padding-bottom: 1rem; margin-bottom: 1rem; }
+        .prefs-header h2 { margin: 0; }
+        .close-prefs { background: none; border: none; font-size: 2rem; cursor: pointer; }
+        .profile-card { background: var(--container-color); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+        .profile-header { display: flex; align-items: center; gap: 1rem; }
+        .profile-header img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+        .profile-name-container { flex: 1; }
+        .profile-name-container h3 { margin: 0; font-size: 1.2rem; }
+        .profile-name-container .translation { font-size: 0.9rem; color: #666; }
+        .edit-profile-name { background: none; border: none; cursor: pointer; }
+        .nickname-list { list-style: none; padding: 0; margin-top: 1rem; }
+        .nickname-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid #f0f0f0; }
+        .nickname-actions button { background: none; border: none; cursor: pointer; padding: 4px; }
+        .nickname-actions svg { width: 18px; height: 18px; }
+        .delete-nickname { color: var(--danger-color); }
+        .add-nickname-form, .edit-form { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .add-nickname-form input, .edit-form input { flex: 1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; }
+        .add-nickname-form button, .edit-form button { padding: 0.5rem 1rem; border: none; background-color: var(--primary-color); color: white; border-radius: 6px; cursor: pointer; }
+        #add-profile-btn { width: 100%; padding: 0.8rem; margin-top: 1rem; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Mes Messages Rapides
+        </h1>
+        <div id="phrases-container"></div>
+    </div>
+
+    <div class="select-container">
+        <div id="nickname-selector-container" class="hidden">
+            <div id="nickname-selector" class="nickname-selector"></div>
+        </div>
+        <div id="name-selector" class="name-selector"></div>
+    </div>
+
+    <div id="feedback-message" class="feedback">Copié</div>
+
+    <div id="prefs-modal" class="prefs-modal">
+        <div class="prefs-content">
+            <div class="prefs-header">
+                <h2>Préférences</h2>
+                <button class="close-prefs">&times;</button>
+            </div>
+            <div id="prefs-profiles-container"></div>
+            <button id="add-profile-btn">Ajouter un profil</button>
+        </div>
+    </div>
+
+    <script>
+    // ==============================================================================
+    //  CONFIGURATION
+    // ==============================================================================
+    
+    const DEFAULT_PROFILES = [
+        { 
+            id: 'lina', displayName: "Lina", mainTranslation: "莉娜", image: `https://placehold.co/64x64/f8b4b4/333?text=L`,
+            nicknames: [ 
+                { id: Date.now()+1, display: "Étoile", fr_value: "mon étoile", cn_value: "我的小星星" }
+            ]
+        },
+        { 
+            id: 'sofia', displayName: "Sofia", mainTranslation: "索菲亚", image: `https://placehold.co/64x64/b4d2f8/333?text=S`,
+            nicknames: []
+        }
+    ];
+    const CATEGORIES = [ { title: "Salutations", phrases: [ { fr: "Bonjour {nom}, comment vas-tu ?", cn: "早上好 {nom}，你今天过得怎么样？" }, { fr: "Bonne nuit {nom}, fais de beaux rêves.", cn: "晚安 {nom}，做个好梦。" }, ] }, { title: "Questions", phrases: [ { fr: "As-tu bien mangé, {nom} ?", cn: "{nom}，你吃得好吗？" }, { fr: "Quand rentres-tu, {nom} ?", cn: "你什么时候回家，{nom}？" }, ] }, { title: "Affection", phrases: [ { fr: "Je pense à toi, {nom}.", cn: "我在想你，{nom}。" }, { fr: "Je t'aime, {nom}.", cn: "我爱你，{nom}。" }, ] } ];
+
+    // ==============================================================================
+    //  GESTION DB
+    // ==============================================================================
+    const dbName = "messageAppDB";
+    let db;
+    function initDB() { return new Promise((resolve, reject) => { const request = indexedDB.open(dbName, 1); request.onerror = event => reject("Erreur IndexedDB: " + event.target.errorCode); request.onsuccess = event => { db = event.target.result; resolve(db); }; request.onupgradeneeded = event => { let db = event.target.result; if (!db.objectStoreNames.contains('profiles')) { db.createObjectStore('profiles', { keyPath: 'id' }); } }; }); }
+    function getFromDB(storeName, key) { return new Promise((resolve) => { const transaction = db.transaction(storeName, 'readonly'); const store = transaction.objectStore(storeName); const request = store.get(key); request.onsuccess = () => resolve(request.result); }); }
+    function getAllFromDB(storeName) { return new Promise((resolve) => { const transaction = db.transaction(storeName, 'readonly'); const store = transaction.objectStore(storeName); const request = store.getAll(); request.onsuccess = () => resolve(request.result); }); }
+    function saveToDB(storeName, data) { return new Promise((resolve, reject) => { const transaction = db.transaction(storeName, 'readwrite'); const store = transaction.objectStore(storeName); const request = store.put(data); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }); }
+
+    // ==============================================================================
+    //  LOGIQUE PRINCIPALE
+    // ==============================================================================
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            await initDB();
+            initializeApp();
+        } catch (error) {
+            console.error("Impossible d'initialiser la base de données:", error);
+            alert("Erreur critique: l'application ne peut pas sauvegarder les données.");
+        }
+    });
+
+    async function initializeApp() {
+        const nameSelector = document.getElementById('name-selector');
+        const nicknameSelectorContainer = document.getElementById('nickname-selector-container');
+        const nicknameSelector = document.getElementById('nickname-selector');
+        const phrasesContainer = document.getElementById('phrases-container');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const prefsModal = document.getElementById('prefs-modal');
+        const closePrefsBtn = prefsModal.querySelector('.close-prefs');
+        const addProfileBtn = document.getElementById('add-profile-btn');
+        let profiles = [];
+        let feedbackTimeout; 
+
+        async function loadProfilesAndRender() {
+            profiles = await getAllFromDB('profiles');
+            if (profiles.length === 0) {
+                for (const profile of DEFAULT_PROFILES) {
+                    await saveToDB('profiles', profile);
+                }
+                profiles = await getAllFromDB('profiles');
+            }
+            renderNameSelector();
+            updateNicknameSelector();
+            updatePhrasesDisplay();
+        }
+
+        function renderNameSelector() {
+            nameSelector.innerHTML = '';
+            profiles.forEach((p, index) => {
+                const button = createNameButton(p);
+                if (index === 0) button.classList.add('active');
+                nameSelector.appendChild(button);
+            });
+            const generalButton = createNameButton({id: 'general', displayName: 'Général', image: `https://placehold.co/64x64/ccc/333?text=G`});
+            nameSelector.appendChild(generalButton);
+            nameSelector.appendChild(createSettingsButton());
+        }
+
+        function createNameButton(profile) {
+            const button = document.createElement('button');
+            button.className = 'name-btn';
+            button.dataset.profileId = profile.id;
+            button.innerHTML = `<img src="${profile.image}" alt=""> <span>${profile.displayName}</span>`;
+            return button;
+        }
+
+        function createSettingsButton() {
+            const button = document.createElement('button');
+            button.className = 'settings-btn';
+            button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
+            button.addEventListener('click', openPrefsPanel);
+            return button;
+        }
+
+        function updateNicknameSelector() {
+            const activeProfileBtn = nameSelector.querySelector('.name-btn.active');
+            const profileId = activeProfileBtn ? activeProfileBtn.dataset.profileId : null;
+            const profile = profiles.find(p => p.id === profileId);
+
+            if (profile && profile.nicknames && profile.nicknames.length > 0) {
+                nicknameSelector.innerHTML = '';
+                profile.nicknames.forEach((nick) => {
+                    const button = document.createElement('button');
+                    button.className = 'nickname-btn';
+                    button.textContent = nick.display;
+                    button.dataset.cnValue = nick.cn_value;
+                    button.dataset.frValue = nick.fr_value;
+                    nicknameSelector.appendChild(button);
+                });
+                nicknameSelectorContainer.classList.remove('hidden');
+            } else {
+                nicknameSelectorContainer.classList.add('hidden');
+            }
+        }
+
+        CATEGORIES.forEach(category => {
+            const categoryDiv = document.createElement('div'); categoryDiv.className = 'category';
+            const categoryTitle = document.createElement('h2'); categoryTitle.textContent = category.title;
+            categoryDiv.appendChild(categoryTitle);
+            const carouselDiv = document.createElement('div'); carouselDiv.className = 'phrases-carousel';
+            category.phrases.forEach(p => {
+                const phraseDiv = document.createElement('div'); phraseDiv.className = 'phrase';
+                phraseDiv.dataset.frTemplate = p.fr; phraseDiv.dataset.cnTemplate = p.cn;
+                phraseDiv.addEventListener('click', () => onPhraseClick(phraseDiv));
+                carouselDiv.appendChild(phraseDiv);
+            });
+            // CORRECTION DE LA LIGNE QUI CAUSAIT L'ERREUR
+            categoryDiv.appendChild(carouselDiv); 
+            phrasesContainer.appendChild(categoryDiv);
+        });
+        
+        function getCurrentSelection() {
+            const activeProfileBtn = nameSelector.querySelector('.name-btn.active');
+            if (!activeProfileBtn) return { fr_value: '', cn_value: '' };
+            const profileId = activeProfileBtn.dataset.profileId;
+            if (profileId === 'general') return { fr_value: '', cn_value: '' };
+            const profile = profiles.find(p => p.id === profileId);
+            if (!profile) return { fr_value: '', cn_value: '' };
+            
+            const activeNicknameBtn = nicknameSelector.querySelector('.nickname-btn.active');
+            if (activeNicknameBtn) {
+                return { fr_value: activeNicknameBtn.dataset.frValue, cn_value: activeNicknameBtn.dataset.cnValue };
+            }
+            
+            return { fr_value: profile.displayName, cn_value: profile.mainTranslation };
+        }
+
+        function updatePhrasesDisplay() {
+            const { fr_value } = getCurrentSelection();
+            document.querySelectorAll('.phrase').forEach(phraseDiv => {
+                const frTemplate = phraseDiv.dataset.frTemplate;
+                phraseDiv.textContent = frTemplate.replace(/{nom}/g, fr_value).trim().replace(/ ,/g, ',');
+            });
+        }
+        
+        nameSelector.addEventListener('click', function(event) {
+            const clickedButton = event.target.closest('.name-btn');
+            if (!clickedButton) return;
+            nameSelector.querySelectorAll('.name-btn, .nickname-btn').forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+            updateNicknameSelector();
+            updatePhrasesDisplay();
+        });
+
+        nicknameSelector.addEventListener('click', function(event) {
+            const clickedButton = event.target.closest('.nickname-btn');
+            if (!clickedButton) return;
+            nicknameSelector.querySelectorAll('.nickname-btn').forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+            updatePhrasesDisplay();
+        });
+
+        function copyTextToClipboard(text, originalText) {
+            const textArea = document.createElement("textarea"); textArea.value = text;
+            textArea.style.position = 'fixed'; textArea.style.top = '-9999px';
+            document.body.appendChild(textArea); textArea.focus(); textArea.select();
+            let successful = false;
+            try { successful = document.execCommand('copy'); } catch (err) { console.error("Copy failed", err); }
+            document.body.removeChild(textArea);
+            if (successful) { showFeedback(text, originalText); } else { alert("La copie a échoué."); }
+        }
+
+        function onPhraseClick(phraseDiv) {
+            const cnTemplate = phraseDiv.dataset.cnTemplate;
+            const originalText = phraseDiv.textContent;
+            const { cn_value } = getCurrentSelection();
+            const finalMessage = cnTemplate.replace(/{nom}/g, cn_value).trim().replace(/ ，/g, '，').replace(/， /g, '，');
+            copyTextToClipboard(finalMessage, originalText);
+        }
+        
+        function showFeedback(copiedText, originalText) {
+            feedbackMessage.innerHTML = `<div>${copiedText}</div><div class="original-text">(${originalText})</div>`;
+            feedbackMessage.classList.add('show');
+            clearTimeout(feedbackTimeout);
+            feedbackTimeout = setTimeout(() => { feedbackMessage.classList.remove('show'); }, 3000);
+        }
+
+        function openPrefsPanel() { populatePrefsPanel(); prefsModal.classList.add('show'); }
+        function closePrefsPanel() { prefsModal.classList.remove('show'); }
+
+        async function populatePrefsPanel() {
+            const container = document.getElementById('prefs-profiles-container'); container.innerHTML = '';
+            const currentProfiles = await getAllFromDB('profiles');
+            currentProfiles.forEach(profile => {
+                const card = document.createElement('div'); card.className = 'profile-card'; card.dataset.profileId = profile.id;
+                card.innerHTML = `
+                    <div class="profile-header">
+                        <label><img src="${profile.image}" alt="Avatar"><input type="file" accept="image/*" class="image-upload" style="display:none;"></label>
+                        <div class="profile-name-container">
+                            <h3>${profile.displayName}</h3>
+                            <div class="translation">(${profile.mainTranslation})</div>
+                        </div>
+                        <button class="edit-profile-name"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                    </div>
+                    <ul class="nickname-list"></ul>
+                    <div class="add-nickname-form"><input type="text" placeholder="Surnom..."><input type="text" placeholder="Traduction..."><button>Ajouter</button></div>`;
+                const nicknameList = card.querySelector('.nickname-list');
+                profile.nicknames.forEach((nick) => {
+                    const li = document.createElement('li'); li.className = 'nickname-item'; li.dataset.nickId = nick.id;
+                    li.innerHTML = `
+                        <span>${nick.display} (${nick.cn_value})</span> 
+                        <div class="nickname-actions">
+                          <button class="edit-nickname"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                          <button class="delete-nickname">&times;</button>
+                        </div>`;
+                    nicknameList.appendChild(li);
+                });
+                container.appendChild(card);
+            });
+        }
+        
+        addProfileBtn.addEventListener('click', async () => {
+            const name = prompt("Entrez le nom de l'enfant :");
+            if(!name) return;
+            const translation = prompt(`Entrez la traduction de "${name}" :`);
+            if(!translation) return;
+
+            const newProfile = {
+                id: name.toLowerCase().replace(/\s/g, ''),
+                displayName: name,
+                mainTranslation: translation,
+                image: `https://placehold.co/64x64/ccc/333?text=${name.charAt(0)}`,
+                nicknames: []
+            };
+            await saveToDB('profiles', newProfile);
+            await loadProfilesAndRender();
+        });
+
+        prefsModal.addEventListener('click', async function(event) {
+            const target = event.target;
+            const button = target.closest('button');
+            if (!button) return;
+
+            if (button.classList.contains('close-prefs')) { closePrefsPanel(); }
+            
+            const card = target.closest('.profile-card');
+            if (!card) return;
+            const profileId = card.dataset.profileId;
+
+            if (button.classList.contains('edit-profile-name')) {
+                const nameContainer = card.querySelector('.profile-name-container');
+                const profile = await getFromDB('profiles', profileId);
+                nameContainer.innerHTML = `<form class="edit-form"><input type="text" value="${profile.displayName}"><input type="text" value="${profile.mainTranslation}"><button class="save-profile-name">OK</button></form>`;
+            }
+
+            if (button.classList.contains('save-profile-name')) {
+                event.preventDefault();
+                const form = card.querySelector('.edit-form');
+                const newName = form.children[0].value;
+                const newTranslation = form.children[1].value;
+                const profile = await getFromDB('profiles', profileId);
+                profile.displayName = newName;
+                profile.mainTranslation = newTranslation;
+                await saveToDB('profiles', profile);
+                await loadProfilesAndRender();
+                populatePrefsPanel();
+            }
+            
+            if (button.classList.contains('edit-nickname')) {
+                const li = button.closest('.nickname-item');
+                const nickId = li.dataset.nickId;
+                const profile = await getFromDB('profiles', profileId);
+                const nick = profile.nicknames.find(n => n.id == nickId);
+                li.innerHTML = `
+                    <form class="edit-form">
+                        <input type="text" value="${nick.display}">
+                        <input type="text" value="${nick.cn_value}">
+                        <button class="save-nickname" data-nick-id="${nick.id}">OK</button>
+                    </form>`;
+            }
+
+            if (button.classList.contains('save-nickname')) {
+                event.preventDefault();
+                const li = button.closest('.nickname-item');
+                const nickId = button.dataset.nickId;
+                const form = li.querySelector('.edit-form');
+                const newDisplay = form.children[0].value;
+                const newCnValue = form.children[1].value;
+                const profile = await getFromDB('profiles', profileId);
+                const nick = profile.nicknames.find(n => n.id == nickId);
+                nick.display = newDisplay;
+                nick.fr_value = newDisplay;
+                nick.cn_value = newCnValue;
+                await saveToDB('profiles', profile);
+                await loadProfilesAndRender();
+                populatePrefsPanel();
+            }
+
+            if (button.classList.contains('delete-nickname')) {
+                const li = button.closest('.nickname-item');
+                const nickId = li.dataset.nickId;
+                const profile = await getFromDB('profiles', profileId);
+                profile.nicknames = profile.nicknames.filter(n => n.id != nickId);
+                await saveToDB('profiles', profile); await loadProfilesAndRender(); populatePrefsPanel();
+            }
+
+            if (button.parentElement.classList.contains('add-nickname-form')) {
+                event.preventDefault();
+                const form = button.parentElement;
+                const displayInput = form.children[0]; const cnInput = form.children[1];
+                if (displayInput.value && cnInput.value) {
+                    const profile = await getFromDB('profiles', profileId);
+                    profile.nicknames.push({ id: Date.now(), display: displayInput.value, fr_value: displayInput.value, cn_value: cnInput.value });
+                    await saveToDB('profiles', profile); await loadProfilesAndRender(); populatePrefsPanel();
+                }
+            }
+        });
+
+        prefsModal.addEventListener('change', async function(event){
+            if (event.target.classList.contains('image-upload')) {
+                const file = event.target.files[0]; if (!file) return;
+                const card = event.target.closest('.profile-card'); const profileId = card.dataset.profileId;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const newImage = e.target.result;
+                    const profile = await getFromDB('profiles', profileId); profile.image = newImage;
+                    await saveToDB('profiles', profile); await loadProfilesAndRender(); populatePrefsPanel();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        closePrefsBtn.addEventListener('click', closePrefsPanel);
+
+        await loadProfilesAndRender();
+    }
+    </script>
+</body>
+</html>
