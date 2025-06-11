@@ -108,7 +108,7 @@ class SettingsPanel extends HTMLElement {
                     width: 90%;
                     max-width: 400px;
                     height: 100%;
-                    background-color: var(--panel-bg);
+                    background-color: var(--background-color);
                     box-shadow: -2px 0 10px rgba(0,0,0,0.1);
                     transition: right 0.3s ease;
                     overflow: hidden;
@@ -123,7 +123,7 @@ class SettingsPanel extends HTMLElement {
                 .header {
                     background-color: var(--panel-bg);
                     padding: 1rem;
-                    border-bottom: 1px solid #e0e0e0;
+                    border-bottom: 1px solid var(--color-border);
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
@@ -152,35 +152,45 @@ class SettingsPanel extends HTMLElement {
 
                 .tabs {
                     display: flex;
-                    background-color: #f8f9fa;
-                    border-bottom: 1px solid #e0e0e0;
+                    background-color: var(--panel-bg);
+                    padding: 0.75rem;
+                    border-bottom: 1px solid var(--color-border);
                     flex-shrink: 0;
                 }
 
                 .tab-button {
                     flex: 1;
-                    padding: 1rem;
-                    background: none;
-                    border: none;
+                    padding: 0.75rem;
+                    background: #e9ecef;
+                    border: 1px solid #dee2e6;
                     cursor: pointer;
                     font-weight: 600;
-                    color: #666;
+                    color: var(--color-text-light);
                     transition: all 0.2s;
-                    border-bottom: 3px solid transparent;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     gap: 0.5rem;
                 }
+                
+                .tab-button:first-of-type {
+                    border-radius: 8px 0 0 8px;
+                    border-right: none;
+                }
+                
+                .tab-button:last-of-type {
+                    border-radius: 0 8px 8px 0;
+                    border-left: none;
+                }
 
                 .tab-button.active {
-                    color: var(--primary-color);
-                    border-bottom-color: var(--primary-color);
-                    background-color: white;
+                    color: var(--primary-text-color);
+                    background-color: var(--primary-color);
+                    border-color: var(--primary-color);
                 }
 
                 .tab-button:hover:not(.active) {
-                    background-color: #e9ecef;
+                    background-color: #f1f3f5;
                 }
 
                 .tab-button svg {

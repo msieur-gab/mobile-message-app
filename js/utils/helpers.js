@@ -23,7 +23,7 @@ export function createElement(tag, attributes = {}, textContent = '') {
     return element;
 }
 
-// Template replacement
+// Generic template replacement
 export function replaceTemplate(template, replacements) {
     return template.replace(/{(\w+)}/g, (match, key) => {
         const replacement = replacements[key];
@@ -39,17 +39,21 @@ export function replaceTemplate(template, replacements) {
     });
 }
 
-// Specialized template replacement for English names that handles punctuation better
+// Language-neutral name template replacement
 export function replaceNameTemplate(template, replacements) {
     let result = template;
     
     Object.entries(replacements).forEach(([key, value]) => {
         if (!value || value.trim() === '') {
-            // Remove the placeholder and any preceding comma with optional spaces
-            // Patterns: ", {name}", " , {name}", ",{name}", " {name}"
-            result = result.replace(new RegExp(`\\s*,\\s*\\{${key}\\}`, 'g'), '');
-            result = result.replace(new RegExp(`\\s+\\{${key}\\}`, 'g'), '');
-            result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), '');
+            // Remove the placeholder and any preceding comma/punctuation with optional spaces
+            // Handles both Western (,) and Chinese (，) commas automatically
+            const commaPattern = new RegExp(`\\s*[,，]\\s*\\{${key}\\}`, 'g');
+            const spacePattern = new RegExp(`\\s+\\{${key}\\}`, 'g');
+            const plainPattern = new RegExp(`\\{${key}\\}`, 'g');
+            
+            result = result.replace(commaPattern, '');
+            result = result.replace(spacePattern, '');
+            result = result.replace(plainPattern, '');
         } else {
             result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
         }
@@ -57,26 +61,6 @@ export function replaceNameTemplate(template, replacements) {
     
     // Clean up any double spaces or trailing/leading spaces
     return result.replace(/\s+/g, ' ').trim();
-}
-
-// Specialized template replacement for Chinese names that handles Chinese punctuation
-export function replaceChineseNameTemplate(template, replacements) {
-    let result = template;
-    
-    Object.entries(replacements).forEach(([key, value]) => {
-        if (!value || value.trim() === '') {
-            // Remove the placeholder and any preceding Chinese comma
-            // Patterns: "，{name}", " ，{name}", "， {name}"
-            result = result.replace(new RegExp(`\\s*，\\s*\\{${key}\\}`, 'g'), '');
-            result = result.replace(new RegExp(`，\\{${key}\\}`, 'g'), '');
-            result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), '');
-        } else {
-            result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
-        }
-    });
-    
-    // Clean up any remaining punctuation issues
-    return result.trim();
 }
 
 // Debounce function

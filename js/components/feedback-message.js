@@ -5,73 +5,134 @@ class FeedbackMessage extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.timeoutId = null;
+        // Bind the event handler once for stable listener reference
+        this.boundShowFeedback = (data) => this.showFeedback(data.copied, data.original);
     }
 
     connectedCallback() {
         this.render();
-        this.setupEventListeners();
+        eventBus.on(EVENTS.MESSAGE_COPIED, this.boundShowFeedback);
     }
 
-    setupEventListeners() {
-        eventBus.on(EVENTS.MESSAGE_COPIED, (data) => {
-            this.showFeedback(data.copied, data.original);
-        });
+    disconnectedCallback() {
+        // Clean up listeners and timers
+        eventBus.off(EVENTS.MESSAGE_COPIED, this.boundShowFeedback);
+        clearTimeout(this.timeoutId);
     }
 
     showFeedback(copiedText, originalText) {
-        const messageEl = this.shadowRoot.getElementById('message');
-        messageEl.innerHTML = `
-            <div>${copiedText}</div>
-            <div class="original-text">(${originalText})</div>
-        `;
+        const messageEl = this.shadowRoot.getElementById('message-content');
+        if (messageEl) {
+             messageEl.innerHTML = `
+                <div class="copied-text">${copiedText}</div>
+                <div class="original-text">(${originalText})</div>
+            `;
+        }
 
-        this.classList.add('show');
-        
+        // --- Animation Trigger ---
         clearTimeout(this.timeoutId);
+        this.classList.remove('visible'); // Reset first if already visible
+        
+        requestAnimationFrame(() => {
+            this.classList.add('visible'); // Add class to trigger the transition
+        });
+
+        // Set timeout to hide the message after 1.5 seconds
         this.timeoutId = setTimeout(() => {
-            this.classList.remove('show');
-        }, 3000);
+            this.classList.remove('visible');
+        }, 1500);
     }
 
     render() {
         this.shadowRoot.innerHTML = `
             <style>
                 :host {
+                --color: rgb(255, 249, 177);
+/* --colorDark: color-mix(in srgb, var(--color) 80%, black) var(--bg-color); */
+	--colorDark: color-mix(in srgb, var(--color) 80%, black) transparent;
                     position: fixed;
-                    top: 100px;
+                    top: -150px;
                     left: 50%;
-                    transform: translate(-50%, -100%);
-                    background-color: var(--success-color);
-                    color: white;
-                    padding: 1rem 1.5rem;
-                    border-radius: 12px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                    z-index: 1000;
+                    transform: translateX(-50%);
+                    width: 17em;
+                    font-size: 1rem;
+                    z-index: 9999;
+                    
                     opacity: 0;
-                    transition: opacity 0.5s, transform 0.5s;
-                    pointer-events: none;
-                    font-weight: 500;
-                    text-align: center;
-                    width: auto;
-                    max-width: 90%;
+                    visibility: hidden;
+                    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                                opacity 0.4s ease-out, 
+                                visibility 0s 4.9s;
                 }
 
-                :host(.show) {
+                :host(.visible) {
+                    top: 20vh;
                     opacity: 1;
-                    transform: translate(-50%, 0);
+                    visibility: visible;
+                    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                                opacity 0.4s ease-in, 
+                                visibility 0s 0s;
                 }
 
+                .note-body {
+                    position: relative;
+                    width: 100%;
+                    min-height: 4em;
+                    padding: 2em 1.5em 1.5em 1.5em;
+                    box-sizing: border-box;
+
+                    // font-family: 'Comic Sans MS', 'Chalkduster', 'cursive';
+                    line-height: 1.5;
+                    color: #333;
+                    background: #fff9b1; /* Classic post-it yellow */
+                    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+                }
+                
+                /* This pseudo-element creates the folded corner effect */
+                .note-body:before {
+                content: "";
+                position: absolute;
+                top: -1em;
+                right: 0;
+                border-width: 0 1em 1em 0;
+                border-style: solid;
+                border-color: var(--colorDark);
+                /* 	border-collapse: collapse; */
+                }
+
+                .note-body:after {
+                content: "";
+                position: absolute;
+                top: -1em;
+                left: 0;
+                    right:1em;
+
+                border-width: 1em;
+                /* 	border-collapse: collapse; */
+
+                /* 	height: calc (100% -1em); */
+                border-style: solid;
+                border-color: var(--color);
+                }
+
+                #message-content {
+                    text-align: center;
+                    overflow-wrap: break-word;
+                }
+                .copied-text { font-weight: bold; }
                 .original-text {
                     display: block;
-                    font-size: 0.8em;
+                    font-size: 0.9em;
                     opacity: 0.8;
                     margin-top: 6px;
+                    font-style: italic;
                 }
             </style>
             
-            <div id="message">Copied</div>
+            <div class="note-body">
+                <div id="message-content"></div>
+            </div>
         `;
     }
 }
-
 customElements.define('feedback-message', FeedbackMessage);

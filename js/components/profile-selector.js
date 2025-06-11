@@ -175,28 +175,31 @@ class ProfileSelector extends HTMLElement {
                 :host {
                     position: fixed;
                     bottom: 0;
-                    left: 0;
-                    right: 0;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 100%;
+                    max-width: 600px;
                     padding: 1rem;
                     background-color: var(--container-color);
-                    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
                     z-index: 100;
+                    border-top: 1px solid var(--color-border);
+                    box-sizing: border-box;
                 }
 
                 #nicknames-container {
-                    margin-bottom: 0.5rem;
+                    margin-bottom: 0.75rem;
                 }
 
                 #nickname-selector {
                     display: flex;
                     background-color: transparent;
-                    border-radius: 8px;
-                    padding: 4px;
-                    max-width: 500px;
-                    margin: 0 auto;
+                    border-radius: 12px;
+                    padding: 6px;
                     overflow-x: auto;
                     scrollbar-width: none;
                     -ms-overflow-style: none;
+                    gap: 0.5rem;
                 }
 
                 #nickname-selector::-webkit-scrollbar {
@@ -204,35 +207,41 @@ class ProfileSelector extends HTMLElement {
                 }
 
                 .nickname-btn {
-                    background-color: #e2e8f0;
-                    margin-right: 8px;
+                    background-color: #f1f5f9;
+                    margin: 0;
                     flex-shrink: 0;
-                    padding: 0.5rem;
+                    padding: 0.5rem 0.875rem;
                     border: none;
-                    color: var(--text-color);
-                    font-size: 0.9rem;
+                    color: var(--color-text-light);
+                    font-size: 0.875rem;
                     font-weight: 600;
-                    border-radius: 6px;
+                    border-radius: 10px;
                     cursor: pointer;
-                    transition: background-color 0.3s, color 0.3s;
+                    transition: all 0.2s ease-in-out;
                     text-align: center;
                     white-space: nowrap;
+                    border: 2px solid transparent;
+                }
+
+                .nickname-btn:hover {
+                    background-color: #e2e8f0;
+                    transform: translateY(-1px);
                 }
 
                 .nickname-btn.active {
                     background-color: var(--primary-color);
                     color: var(--primary-text-color);
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+                    transform: translateY(-1px);
                 }
 
                 #profiles-container {
                     display: flex;
                     align-items: center;
-                    background-color: #e9ecef;
-                    border-radius: 8px;
-                    padding: 4px;
-                    max-width: 500px;
-                    margin: 0 auto;
+                    background-color: #f8fafc;
+                    border-radius: 12px;
+                    padding: 6px;
+                    gap: 4px;
                 }
 
                 .profile-btn {
@@ -241,35 +250,69 @@ class ProfileSelector extends HTMLElement {
                     align-items: center;
                     justify-content: center;
                     gap: 8px;
-                    padding: 0.5rem;
+                    padding: 0.625rem 0.5rem;
                     border: none;
                     background-color: transparent;
-                    color: var(--text-color);
-                    font-size: 0.9rem;
+                    color: var(--color-text-light);
+                    font-size: 0.875rem;
                     font-weight: 600;
-                    border-radius: 6px;
+                    border-radius: 10px;
                     cursor: pointer;
-                    transition: background-color 0.3s, color 0.3s;
+                    transition: all 0.2s ease-in-out;
                     text-align: center;
                     white-space: nowrap;
+                    border: 2px solid transparent;
+                }
+
+                .profile-btn:hover {
+                    background-color: #e2e8f0;
+                    transform: translateY(-1px);
                 }
 
                 .profile-btn.active {
                     background-color: var(--primary-color);
                     color: var(--primary-text-color);
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+                    transform: translateY(-1px);
                 }
 
                 .profile-btn img {
-                    width: 24px;
-                    height: 24px;
+                    width: 28px;
+                    height: 28px;
                     border-radius: 50%;
                     object-fit: cover;
+                    border: 2px solid rgba(255, 255, 255, 0.8);
+                }
+
+                .profile-btn.active img {
+                    border-color: rgba(255, 255, 255, 0.9);
+                }
+
+                @media (max-width: 768px) {
+                    :host {
+                        padding: 0.875rem;
+                    }
+
+                    .profile-btn {
+                        font-size: 0.8rem;
+                        padding: 0.5rem 0.375rem;
+                        gap: 6px;
+                    }
+
+                    .profile-btn img {
+                        width: 24px;
+                        height: 24px;
+                    }
+
+                    .nickname-btn {
+                        font-size: 0.8rem;
+                        padding: 0.425rem 0.75rem;
+                    }
                 }
             </style>
 
             <div id="nicknames-container" style="display: none;">
-                <div id="nickname-selector"></div>
+                <div id="nickname-selector" class="no-scrollbar"></div>
             </div>
             <div id="profiles-container"></div>
         `;

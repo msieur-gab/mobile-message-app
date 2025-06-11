@@ -1,17 +1,17 @@
 export const DEFAULT_PROFILES = [
     { 
-        id: 'lina', 
-        displayName: "Lina", 
-        mainTranslation: "莉娜", 
+        id: 'léna', 
+        displayName: "Léna", 
+        mainTranslation: "蕾娜", 
         image: `https://placehold.co/64x64/f8b4b4/333?text=L`,
         nicknames: [ 
             { id: Date.now()+1, display: "Star", baseLang_value: "my star", targetLang_value: "我的小星星" }
         ]
     },
     { 
-        id: 'sofia', 
-        displayName: "Sofia", 
-        mainTranslation: "索菲亚", 
+        id: 'leelou', 
+        displayName: "Leelou", 
+        mainTranslation: "理露", 
         image: `https://placehold.co/64x64/b4d2f8/333?text=S`,
         nicknames: []
     }

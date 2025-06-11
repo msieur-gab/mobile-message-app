@@ -35,5 +35,6 @@ export const EVENTS = {
     CATEGORIES_UPDATED: 'categories:updated',
     MESSAGE_COPIED: 'message:copied',
     SETTINGS_TOGGLE: 'settings:toggle',
+    // VIEW_CHANGED: 'view:changed',
     APP_READY: 'app:ready'
 };
