@@ -75,7 +75,9 @@ class BottomProfileSelector extends HTMLElement {
         
         if (this.activeProfile && avatar && name) {
             const activeNickname = this.activeNickname && this.activeProfile.nicknames.find(n => n.id === this.activeNickname.id);
-            name.textContent = activeNickname ? activeNickname.display : this.activeProfile.displayName || 'Loading...';
+            // name.textContent = activeNickname ? activeNickname.display : this.activeProfile.displayName || 'Loading...';
+            name.textContent = this.activeProfile.displayName || 'Loading...';
+
             avatar.src = this.activeProfile.image || 'https://placehold.co/40x40/ccc/333?text=?';
         } else if (avatar && name) {
             avatar.src = 'https://placehold.co/40x40/ccc/333?text=?';
