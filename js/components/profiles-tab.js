@@ -1,6 +1,8 @@
 import { eventBus, EVENTS } from '../utils/events.js';
 import { ProfileService } from '../services/profiles.js';
 import { TimezoneService } from '../services/timezoneService.js';
+import { ImageProcessor } from '../utils/image-processor.js'; // Import your new class
+
 
 class ProfilesTab extends HTMLElement {
     constructor() {
@@ -89,6 +91,7 @@ class ProfilesTab extends HTMLElement {
             return;
         }
 
+        // Handle image upload
         if (event.target.classList.contains('image-upload')) {
             const file = event.target.files[0];
             if (!file) return;
@@ -96,11 +99,21 @@ class ProfilesTab extends HTMLElement {
             const profileCard = event.target.closest('.profile-card');
             const profileId = profileCard.dataset.profileId;
 
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                await ProfileService.updateProfile(profileId, { image: e.target.result });
-            };
-            reader.readAsDataURL(file);
+            try {
+                // Use your image processor
+                const processedImage = await ImageProcessor.processImage(file);
+
+                // Convert the resulting blob to a base64 data URL for storage
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    await ProfileService.updateProfile(profileId, { image: e.target.result });
+                };
+                reader.readAsDataURL(processedImage.blob);
+
+            } catch (error) {
+                console.error("Failed to process image:", error);
+                alert("Sorry, there was an error processing your image.");
+            }
         }
     }
 
