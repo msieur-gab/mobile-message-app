@@ -4,6 +4,9 @@ export const DEFAULT_PROFILES = [
         displayName: "Léna", 
         mainTranslation: "蕾娜", 
         image: `https://placehold.co/64x64/f8b4b4/333?text=L`,
+        // New fields
+        birthdate: '2015-06-29', // YYYY-MM-DD
+        timezone: 'Asia/Shanghai',
         nicknames: [ 
             { id: Date.now()+1, display: "Star", baseLang_value: "my star", targetLang_value: "我的小星星" }
         ]
@@ -13,6 +16,9 @@ export const DEFAULT_PROFILES = [
         displayName: "Leelou", 
         mainTranslation: "理露", 
         image: `https://placehold.co/64x64/b4d2f8/333?text=S`,
+        // New fields
+        birthdate: '2013-09-11', // YYYY-MM-DD
+        timezone: 'Asia/Shanghai',
         nicknames: []
     }
 ];

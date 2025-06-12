@@ -1,10 +1,12 @@
 import { eventBus, EVENTS } from '../utils/events.js';
+import { getZonedTime, formatTime, daysUntilBirthday } from '../utils/time.js';
 
 class AppHeader extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
         this.timeInterval = null;
+        this.profileTimeInterval = null;
     }
 
     connectedCallback() {
@@ -14,10 +16,15 @@ class AppHeader extends HTMLElement {
         this.updateTime = this.updateTime.bind(this);
         this.updateTime();
         this.timeInterval = setInterval(this.updateTime, 1000);
+        
+        this.boundUpdateProfileCards = (data) => this.updateProfileCards(data.profile);
+        eventBus.on(EVENTS.PROFILE_SELECTED, this.boundUpdateProfileCards);
     }
 
     disconnectedCallback() {
         clearInterval(this.timeInterval);
+        clearInterval(this.profileTimeInterval);
+        eventBus.off(EVENTS.PROFILE_SELECTED, this.boundUpdateProfileCards);
     }
 
     updateTime() {
@@ -30,6 +37,55 @@ class AppHeader extends HTMLElement {
                 hour12: false
             });
             timeEl.textContent = timeString;
+        }
+    }
+
+    /**
+     * Updates the profile-specific cards with time and birthday info.
+     * @param {object} profile - The selected profile object.
+     */
+    updateProfileCards(profile) {
+        const profileTimeCard = this.shadowRoot.getElementById('profile-time-card');
+        const birthdayCard = this.shadowRoot.getElementById('birthday-card');
+
+        // Clear any existing interval
+        clearInterval(this.profileTimeInterval);
+
+        if (profile && profile.timezone) {
+            const update = () => {
+                const zonedTime = getZonedTime(profile.timezone);
+                const timeString = formatTime(zonedTime, profile.timezone);
+                profileTimeCard.querySelector('.card-content').textContent = timeString;
+                profileTimeCard.querySelector('.card-title').textContent = `${profile.displayName}'s Time`;
+            };
+            update(); // Update immediately
+            this.profileTimeInterval = setInterval(update, 1000); // Then update every second
+            profileTimeCard.style.display = 'flex';
+        } else {
+            profileTimeCard.style.display = 'none';
+        }
+
+        if (profile && profile.birthdate) {
+            const days = daysUntilBirthday(profile.birthdate);
+            const birthdayContent = birthdayCard.querySelector('.card-content');
+            
+            
+            birthdayCard.querySelector('.card-title').textContent = `${profile.displayName}'s birthday is`;
+        
+            if (days === 0) {
+                 birthdayContent.textContent = 'Today! 🎉';
+            } else if (days === 1) {
+                // Corrected line:
+                birthdayContent.textContent = 'Tomorrow';
+           } else if (days > 0) {
+                // Your improved text:
+                birthdayContent.textContent = `in ${days} days`;
+            } else {
+                birthdayContent.textContent = '🎉';
+            }
+            birthdayCard.style.display = 'flex';
+        } else {
+            birthdayCard.style.display = 'none';
         }
     }
 
@@ -49,9 +105,8 @@ class AppHeader extends HTMLElement {
                     display: block;
                     background-color: var(--container-color);
                     padding: 1rem;
-                    border-bottom: 1px solid var(--color-border);
+                    
                 }
-
                 .top-bar {
                     display: flex;
                     align-items: center;
@@ -76,6 +131,7 @@ class AppHeader extends HTMLElement {
                     overflow-x: auto;
                     scroll-snap-type: x mandatory;
                     gap: 1rem;
+                    padding-top: 2rem;
                     scrollbar-width: none;
                     -ms-overflow-style: none;
                 }
@@ -89,12 +145,44 @@ class AppHeader extends HTMLElement {
                     background: #1f2937;
                     color: #ffffff;
                     border-radius: 12px;
-                    padding: 1rem;
-                    height: 200px; /* Increased height slightly for graphs */
+                    height: 120px; /* Reset height */
                     display: flex;
                     flex-direction: column;
+                    position: relative; /* Make card a positioning context */
+                    overflow: visible; /* Hide parts of SVG that are too far out */
                 }
+
+                /* === MODIFIED STYLES FOR ILLUSTRATED CARDS === */
+                .card.card--illustrated {
+                    justify-content: end;
+                    padding: 1rem;
+                }
+                .card-illustration {
+                    position: absolute;
+                    top: -30px;   /* Changed from 'bottom' to 'top' */
+                    left: 15px;  /* Adjusted positioning */
+                    width: 80px;
+                    height: 80px;
+                    z-index: 10;
+                    /* opacity: 0.9;  A subtle opacity */
+                }
+                    card-illustration svg,
+                .card-illustration img {
+                    width: 100%;
+                    height: 100%;
+                }
+
+                .card-text-container {
+                    position: relative;
+                    z-index: 1;
+                    text-align: right;
+                    /* padding-left: 50px;  Add padding to avoid text overlapping the illustration */
+                }
+                 /* === END MODIFIED STYLES === */
                 .card-title {
+                    width: 100%;          /* Allows the title to take full width */
+                    text-align: left;     /* Aligns the title text to the left */
+
                     font-size: 0.875rem;
                     font-weight: 500;
                     color:rgb(182, 182, 182);
@@ -102,7 +190,7 @@ class AppHeader extends HTMLElement {
                 }
                 .card-content {
                     flex: 1; /* Allow content to fill space */
-                    font-size: 1.75rem;
+                    font-size: 1.25rem;
                     font-weight: 700;
                     text-align: right;
                     display: flex;
@@ -182,14 +270,36 @@ class AppHeader extends HTMLElement {
             </div>
 
             <div class="carousel-container">
-                <div class="card">
+                <!-- <div class="card">
                     <span class="card-title">Current Time</span>
                     <div class="card-content">
                         <span id="time-card-content">--:--</span>
                     </div>
+                </div> -->
+
+                <div class="card card--illustrated" id="profile-time-card" style="display: none;">
+                    <div class="card-illustration">
+                         <img src="./data/time.svg" alt="Timezone illustration">
+
+                    </div>
+                    <div class="card-text-container">
+                        <span class="card-title">Profile's Time</span>
+                        <div class="card-content">--:--</div>
+                    </div>
                 </div>
 
-                <div class="card">
+                <div class="card card--illustrated" id="birthday-card" style="display: none;">
+                    <div class="card-illustration">
+                        <img src="./data/gift.svg" alt="Birthday illustration">
+
+                    </div>
+                    <div class="card-text-container">
+                        <span class="card-title">Birthday In</span>
+                        <div class="card-content">...</div>
+                    </div>
+                </div>
+
+               <!--  <div class="card">
                     <span class="card-title">Past 7 Days</span>
                     <div class="graph-container">
                         <div class="bar" style="height: 60%;"></div>
@@ -200,9 +310,9 @@ class AppHeader extends HTMLElement {
                         <div class="bar" style="height: 70%;"></div>
                         <div class="bar" style="height: 100%;"></div>
                     </div>
-                </div>
+                </div> -->
 
-                <div class="card">
+                <!-- <div class="card">
                     <span class="card-title">Most used category</span>
                     <div class="h-graph-container">
                         <div class="h-bar-group">
@@ -218,7 +328,7 @@ class AppHeader extends HTMLElement {
                             <div class="h-bar-wrapper"><div class="h-bar" style="width: 45%;"></div></div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         `;
     }

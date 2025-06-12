@@ -1,17 +1,24 @@
 import { eventBus, EVENTS } from '../utils/events.js';
 import { ProfileService } from '../services/profiles.js';
+import { TimezoneService } from '../services/timezoneService.js';
 
 class ProfilesTab extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
         this.profiles = [];
+        this.timezoneData = [];
     }
 
     connectedCallback() {
         this.render();
         this.setupEventListeners();
         this.loadProfiles();
+        this.loadTimezoneData();
+    }
+
+    async loadTimezoneData() {
+        this.timezoneData = await TimezoneService.getTimezones();
     }
 
     setupEventListeners() {
@@ -76,6 +83,12 @@ class ProfilesTab extends HTMLElement {
     }
 
     async handleChange(event) {
+        // Handle country dropdown change
+        if (event.target.id === 'country-select') {
+            this._handleCountryChange(event.target.value);
+            return;
+        }
+
         if (event.target.classList.contains('image-upload')) {
             const file = event.target.files[0];
             if (!file) return;
@@ -155,27 +168,125 @@ class ProfilesTab extends HTMLElement {
         }
     }
 
+
     editProfileName(profileCard, profileId) {
         const nameContainer = profileCard.querySelector('.profile-name-container');
         const profile = this.profiles.find(p => p.id === profileId);
+        
+        //  // Get all timezones supported by the browser.
+        //  const timezones = Intl.supportedValuesOf('timeZone');
+        //  const timezoneOptions = timezones.map(tz => {
+        //      // Pre-select the profile's current timezone.
+        //      const selected = tz === profile.timezone ? 'selected' : '';
+        //      return `<option value="${tz}" ${selected}>${tz}</option>`;
+        //  }).join('');
+
+        // Added inputs for timezone and birthdate
         nameContainer.innerHTML = `
-            <form class="edit-form">
-                <input type="text" value="${profile.displayName}">
-                <input type="text" value="${profile.mainTranslation}">
+           <form class="edit-form">
+                <label>Name:</label>
+                <input type="text" name="displayName" value="${profile.displayName}" placeholder="Name">
+                <label>Translation:</label>
+                <input type="text" name="mainTranslation" value="${profile.mainTranslation}" placeholder="Translation">
+                
+                <label>Country:</label>
+                <select name="country" id="country-select"></select>
+
+                <label>Timezone:</label>
+                <select name="timezone" id="timezone-select"></select>
+
+                <label>Birthday:</label>
+                <input type="date" name="birthdate" value="${profile.birthdate || ''}">
                 <button class="save-profile-name">OK</button>
             </form>`;
+
+            this._populateCountryDropdown(profile);
+            this._preselectValuesFromProfile(profile);
+    }
+
+     /**
+     * Fills the country dropdown with all available countries.
+     */
+     _populateCountryDropdown(profile) {
+        const countrySelect = this.shadowRoot.getElementById('country-select');
+        const countryOptions = this.timezoneData.map(data => {
+            return `<option value="${data.country}">${data.country}</option>`;
+        }).join('');
+        countrySelect.innerHTML = `<option value="">-- Select Country --</option>${countryOptions}`;
+    }
+
+    /**
+     * Populates the timezone dropdown based on the selected country.
+     */
+    _populateTimezoneDropdown(countryName, selectedTimezone = null) {
+        const timezoneSelect = this.shadowRoot.getElementById('timezone-select');
+        const countryData = this.timezoneData.find(d => d.country === countryName);
+        
+        if (!countryData || countryData.timezones.length === 0) {
+            timezoneSelect.innerHTML = '';
+            timezoneSelect.style.display = 'none';
+            return;
+        }
+        
+        const timezoneOptions = countryData.timezones.map(tz => {
+            const selected = (tz === selectedTimezone) ? 'selected' : '';
+            return `<option value="${tz}" ${selected}>${tz.replace(/_/g, ' ')}</option>`;
+        }).join('');
+
+        timezoneSelect.innerHTML = timezoneOptions;
+        timezoneSelect.style.display = 'block';
+
+        // If there's only one timezone, select it automatically.
+        if (countryData.timezones.length === 1) {
+            timezoneSelect.value = countryData.timezones[0];
+        }
+    }
+    
+    /**
+     * Sets the initial dropdown values based on the saved profile.
+     */
+    _preselectValuesFromProfile(profile) {
+        if (!profile.timezone) {
+            // Hide the timezone dropdown if none is set
+            const timezoneSelect = this.shadowRoot.getElementById('timezone-select');
+            timezoneSelect.style.display = 'none';
+            return;
+        };
+
+        // Find which country the saved timezone belongs to
+        const countryData = this.timezoneData.find(d => d.timezones.includes(profile.timezone));
+
+        if (countryData) {
+            const countrySelect = this.shadowRoot.getElementById('country-select');
+            countrySelect.value = countryData.country;
+            this._populateTimezoneDropdown(countryData.country, profile.timezone);
+        }
+    }
+
+    /**
+     * Handles the change event for the country dropdown.
+     */
+    _handleCountryChange(countryName) {
+        this._populateTimezoneDropdown(countryName);
     }
 
     async saveProfileName(profileCard, profileId) {
         const form = profileCard.querySelector('.edit-form');
-        const newName = form.children[0].value;
-        const newTranslation = form.children[1].value;
+        // Use FormData to reliably get values
+        const formData = new FormData(form);
         
-        await ProfileService.updateProfile(profileId, {
-            displayName: newName,
-            mainTranslation: newTranslation
-        });
+        const updates = {
+            displayName: formData.get('displayName'),
+            mainTranslation: formData.get('mainTranslation'),
+            timezone: formData.get('timezone'),
+            birthdate: formData.get('birthdate')
+        };
+        
+        await ProfileService.updateProfile(profileId, updates);
     }
+    // =======================
+    // =====  MODIFIED CODE END  =====
+    // =======================
 
     editNickname(button, profileId) {
         const li = button.closest('.nickname-item');
@@ -415,6 +526,7 @@ class ProfilesTab extends HTMLElement {
 
                 .collapsible-content.expanded {
                     max-height: 1000px;
+                    padding-top: 1rem; /* Added padding for when it's open */
                 }
 
                 .expand-btn svg {
@@ -467,6 +579,14 @@ class ProfilesTab extends HTMLElement {
                     width: 100%;
                     box-sizing: border-box;
                 }
+                
+                /* Added style for edit form label */
+                .edit-form label {
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                    color: #666;
+                    margin-top: 0.5rem;
+                }
 
                 .add-nickname-form input, .edit-form input {
                     width: 100%;
@@ -490,6 +610,7 @@ class ProfilesTab extends HTMLElement {
                     font-size: 1rem;
                     transition: background-color 0.2s;
                     box-sizing: border-box;
+                    margin-top: 0.5rem; /* Added margin to button */
                 }
 
                 .add-nickname-form button:hover, .edit-form button:hover {
@@ -596,7 +717,6 @@ class ProfilesTab extends HTMLElement {
             <div id="profiles-container"></div>
             <button id="add-profile-btn">Add Profile</button>
 
-            <!-- Add Profile Dialog -->
             <dialog id="add-profile-dialog">
                 <div class="dialog-content">
                     <h3 class="dialog-header">Add New Profile</h3>

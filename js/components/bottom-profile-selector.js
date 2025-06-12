@@ -42,12 +42,22 @@ class BottomProfileSelector extends HTMLElement {
             if (!this.activeProfile || !activeProfileStillExists) {
                 this.activeProfile = this.profiles.length > 0 ? this.profiles[0] : null;
                 this.activeNickname = null;
+                // --- MODIFICATION START ---
+                // Emit the first profile by default on load
+                if (this.activeProfile) {
+                    eventBus.emit(EVENTS.PROFILE_SELECTED, { profile: this.activeProfile, nickname: null });
+                }
             } else {
                 this.activeProfile = this.profiles.find(p => p.id === this.activeProfile.id);
                 if (this.activeNickname) {
                     const nicknameStillExists = this.activeProfile.nicknames.some(n => n.id === this.activeNickname.id);
                     if (!nicknameStillExists) this.activeNickname = null;
                 }
+            }
+             // After any profile update, always re-broadcast the active profile.
+            // This ensures other components (like the header) get the latest data.
+            if (this.activeProfile) {
+                eventBus.emit(EVENTS.PROFILE_SELECTED, { profile: this.activeProfile, nickname: this.activeNickname });
             }
             
             this.updateDisplay();
@@ -123,8 +133,10 @@ class BottomProfileSelector extends HTMLElement {
             ? { baseLang_value: '', targetLang_value: '' }
             : { baseLang_value: this.activeProfile.displayName, targetLang_value: this.activeProfile.mainTranslation };
         
-        eventBus.emit(EVENTS.PROFILE_SELECTED, selection);
-    }
+            // eventBus.emit(EVENTS.PROFILE_SELECTED, { profile: this.activeProfile, nickname: null });
+            eventBus.emit(EVENTS.PROFILE_SELECTED, { profile: this.activeProfile, nickname: null });
+
+        }
 
     selectNickname(profile, nickname) {
         this.activeProfile = profile;
@@ -137,8 +149,10 @@ class BottomProfileSelector extends HTMLElement {
             targetLang_value: nickname.targetLang_value || nickname.display
         };
         
-        eventBus.emit(EVENTS.PROFILE_SELECTED, selection);
-        eventBus.emit(EVENTS.NICKNAME_SELECTED, selection);
+        // eventBus.emit(EVENTS.PROFILE_SELECTED, selection);
+        // eventBus.emit(EVENTS.NICKNAME_SELECTED, selection);
+        eventBus.emit(EVENTS.PROFILE_SELECTED, { profile: this.activeProfile, nickname: this.activeNickname });
+
     }
 
     toggleDropdown() {

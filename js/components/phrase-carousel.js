@@ -49,13 +49,36 @@ class PhraseCarousel extends HTMLElement {
             this.loadCategories();
         });
 
-        eventBus.on(EVENTS.PROFILE_SELECTED, (selection) => {
-            this.currentSelection = selection;
-            this.updatePhraseDisplay();
-        });
+        // eventBus.on(EVENTS.PROFILE_SELECTED, (selection) => {
+        //     this.currentSelection = selection;
+        //     this.updatePhraseDisplay();
+        // });
 
-        eventBus.on(EVENTS.NICKNAME_SELECTED, (selection) => {
-            this.currentSelection = selection;
+        // eventBus.on(EVENTS.NICKNAME_SELECTED, (selection) => {
+        //     this.currentSelection = selection;
+        //     this.updatePhraseDisplay();
+        // });
+        eventBus.on(EVENTS.PROFILE_SELECTED, (data) => {
+            const { profile, nickname } = data;
+
+            if (nickname) {
+                // If a nickname is selected, use its values
+                this.currentSelection = {
+                    baseLang_value: nickname.baseLang_value || nickname.display,
+                    targetLang_value: nickname.targetLang_value || nickname.display
+                };
+            } else if (profile) {
+                // Otherwise, use the main profile's values
+                if (profile.id === 'general') {
+                    this.currentSelection = { baseLang_value: '', targetLang_value: '' };
+                } else {
+                    this.currentSelection = {
+                        baseLang_value: profile.displayName,
+                        targetLang_value: profile.mainTranslation
+                    };
+                }
+            }
+            
             this.updatePhraseDisplay();
         });
     }
