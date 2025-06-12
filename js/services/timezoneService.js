@@ -13,7 +13,7 @@ export const TimezoneService = {
 
         try {
             // Assumes your timezones.json is in a /data/ directory
-            const response = await fetch('../data/timezones.json');
+            const response = await fetch('./data/timezones.json');
             if (!response.ok) {
                 throw new Error('Failed to load timezone data.');
             }
