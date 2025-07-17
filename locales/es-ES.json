@@ -1,0 +1,75 @@
+{
+    "categories": {
+      "greetings": "Saludos",
+      "questions": "Preguntas",
+      "affection": "Afecto",
+      "school": "Escuela",
+      "sports": "Deportes",
+      "holidays": "Vacaciones",
+      "birthday": "Cumpleaños",
+      "christmas": "Navidad",
+      "special-events": "Eventos Especiales"
+    },
+    "phrases": {
+      "greetings": [
+        { "id": "greet1", "text": "Buenos días {name}, ¿cómo estás hoy?" },
+        { "id": "greet2", "text": "Buenas noches {name}, dulces sueños." },
+        { "id": "greet3", "text": "¡Que tengas un día maravilloso, {name}!" }
+      ],
+      "questions": [
+        { "id": "quest1", "text": "¿Comiste bien, {name}?" },
+        { "id": "quest2", "text": "¿Cuándo vienes a casa, {name}?" },
+        { "id": "quest3", "text": "¿Qué tal tu día, {name}?" },
+        { "id": "quest4", "text": "¿Te encuentras bien, {name}?" }
+      ],
+      "affection": [
+        { "id": "aff1", "text": "Estoy pensando en ti, {name}." },
+        { "id": "aff2", "text": "Te quiero, {name}." },
+        { "id": "aff3", "text": "Te echo mucho de menos, {name}." },
+        { "id": "aff4", "text": "Me haces sentir muy orgulloso/orgullosa, {name}." }
+      ],
+      "school": [
+        { "id": "school1", "text": "¿Terminaste tu tarea, {name}?" },
+        { "id": "school2", "text": "¡Buena suerte en tu examen de hoy, {name}!" },
+        { "id": "school3", "text": "¿Cómo estuvo la escuela hoy, {name}?" },
+        { "id": "school4", "text": "No olvides preparar tu mochila, {name}." },
+        { "id": "school5", "text": "Estudia mucho, {name}. ¡Creo en ti!" }
+      ],
+      "sports": [
+        { "id": "sport1", "text": "¡Buena suerte en la práctica de hoy, {name}!" },
+        { "id": "sport2", "text": "¿Cómo estuvo tu partido, {name}?" },
+        { "id": "sport3", "text": "¡Jugaste increíblemente, {name}!" },
+        { "id": "sport4", "text": "No olvides tu equipo deportivo, {name}." },
+        { "id": "sport5", "text": "¡Sigue así, {name}!" }
+      ],
+      "holidays": [
+        { "id": "holiday1", "text": "¡Disfruta tus vacaciones, {name}!" },
+        { "id": "holiday2", "text": "¿Te estás divirtiendo en tu viaje, {name}?" },
+        { "id": "holiday3", "text": "¡Toma muchas fotos, {name}!" },
+        { "id": "holiday4", "text": "Descansa bien durante las vacaciones, {name}." },
+        { "id": "holiday5", "text": "¡Felices fiestas, {name}!" }
+      ],
+      "birthday": [
+        { "id": "birthday1", "text": "¡Feliz cumpleaños, {name}! ¡Espero que todos tus deseos se hagan realidad!" },
+        { "id": "birthday2", "text": "¡Te deseo el más feliz de los cumpleaños, {name}!" },
+        { "id": "birthday3", "text": "¡Un año más viejo y más sabio, {name}!" },
+        { "id": "birthday4", "text": "¡No puedo esperar para celebrar contigo, {name}!" },
+        { "id": "birthday5", "text": "¡Estás creciendo muy rápido, {name}!" }
+      ],
+      "christmas": [
+        { "id": "christmas1", "text": "¡Feliz Navidad, {name}!" },
+        { "id": "christmas2", "text": "¡Papá Noel llegará pronto, {name}!" },
+        { "id": "christmas3", "text": "¿Has sido bueno/buena este año, {name}?" },
+        { "id": "christmas4", "text": "¡No puedo esperar para abrir los regalos contigo, {name}!" },
+        { "id": "christmas5", "text": "El árbol de Navidad se ve hermoso, {name}." }
+      ],
+      "special-events": [
+        { "id": "special1", "text": "¡Feliz Año Nuevo, {name}! ¡Este será un año increíble!" },
+        { "id": "special2", "text": "¡Felicidades por tu logro, {name}!" },
+        { "id": "special3", "text": "¡Hoy es un día especial, {name}!" },
+        { "id": "special4", "text": "¡Hiciste algo asombroso hoy, {name}!" },
+        { "id": "special5", "text": "¡Celebremos juntos, {name}!" },
+        { "id": "special6", "text": "Este momento es muy valioso, {name}." }
+      ]
+    }
+  }
